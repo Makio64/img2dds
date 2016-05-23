@@ -5,11 +5,12 @@ const dat = require('./dat.gui.js')
 require('./DDSLoader.js')
 
 let config = {
-	algo:'DXT5',
-	compressionQuality:'hight',
+	algo:'DXT1',
+	compressionQuality:'normal',
 	colorMetric:'perceptual',
 	weightColourByAlpha:false,
-	transparent:false
+	transparent:true,
+	materials:{}
 }
 
 gui = new dat.GUI()
@@ -17,23 +18,27 @@ gui.add(config,'algo',['DXT1','DXT3','DXT5'])
 gui.add(config,'compressionQuality',['low','normal','hight'])
 gui.add(config,'colorMetric',['perceptual','uniform'])
 gui.add(config,'weightColourByAlpha')
-gui.add(config,'transparent')
+let c = gui.add(config,'transparent')
+let guiMaterials = gui.add(config,'materials',{}).onChange(function(){})
+let materials = []
+let currentMaterial = 0
+
 
 let infos = document.querySelector("#infos");
 
 function ParseFile(file) {
-	console.clear()
 	infos.innerHTML =
 		"<p>File information: <strong>" + file.name +
-		"<br/></strong> type: <strong>" + file.type +
+		// "<br/></strong> type: <strong>" + file.type +
 		"<br/></strong> size: <strong>" + file.size +"</strong> bytes</p>"
 
 	let reader = new FileReader()
 	reader.onload = function (e) {
 		let img = new Image()
+		infos.innerHTML+='---------------<br/>compressing, please wait.<br/>'
 		img.onload = function(){
-			document.body.appendChild(img)
-			infos.innerHTML+='---------------<br/>compressing, please wait.<br/>'
+			infos.innerHTML+="</strong> dimension: <strong>" + img.width +"x"+ img.height +"</strong> px<br/>"
+			// document.body.appendChild(img)
 			const start = Date.now()
 			let canvas = document.createElement('canvas')
 			canvas.width = img.width
@@ -114,11 +119,17 @@ function ParseFile(file) {
 			let compressed = dxt.compress(Buffer.from(data),img.width,img.height,flag)
 			let finalBuffer = Buffer.concat([headerBuffer,compressed])
 			infos.innerHTML+='---------------<br/>compression completed<br/>duration :<strong>'+(Date.now()-start)+"</strong>ms<br/>"
-			let fd =  fs.openSync(__dirname+"/tmp/test2.dds", 'w')
+			const path = (file.path.replace(/\.[^/.]+$/, ""))+".dds"
+			let fd =  fs.openSync(path, 'w')
 			fs.write(fd, finalBuffer, 0, finalBuffer.length, 0, function(err,written){
 				infos.innerHTML+='size: <strong>'+finalBuffer.length+"</strong>bytes<br/>"
-				loadTexture(__dirname+"/tmp/test2.dds")
+				infos.innerHTML+='size change: <strong>'+Math.ceil(parseInt(finalBuffer.length)/parseInt(file.size)*100)+"</strong>%<br/>"
+				loadTexture(path,file.name)
+				setTimeout(function(){
+					setTimeout(loadNext,1500)
+				})
 			})
+
 		}
 		img.src = e.target.result
 	}
@@ -167,6 +178,9 @@ function initWebgl(){
 	document.body.appendChild( renderer.domElement )
 	let geometry = new THREE.BoxGeometry( 200, 200, 200 )
 	let material = new THREE.MeshBasicMaterial( { color:Math.random()*0xFFFFFF, transparent: true } )
+	config.materials['base']=0
+	materials.push(material)
+	updateMaterialGUI()
 	mesh = new THREE.Mesh( geometry,material )
 	scene.add( mesh )
 }
@@ -179,16 +193,28 @@ function animate() {
 	renderer.render( scene, camera )
 }
 
+// TODO find better way to do so.
+function updateMaterialGUI(){
+	guiMaterials.remove()
+	guiMaterials = gui.add(config,'materials',config.materials).onChange(function(value){
+		mesh.material = materials[value]
+	})
+}
+
 initWebgl()
 animate()
 
-function loadTexture(url){
+function loadTexture(url,name){
 	const start = Date.now()
 	url = url || __dirname+"/tmp/disturb_dxt1_mip.dds"
 	let map = loader.load( url )
 	map.minFilter = map.magFilter = THREE.LinearFilter
 	map.anisotropy = 4
 	mesh.material = new THREE.MeshBasicMaterial( { map:map, transparent: true, side:THREE.DoubleSide } )
+	config.materials[name] = materials.length
+	currentMaterial = materials.length
+	materials.push(mesh.material)
+	updateMaterialGUI()
 	// infos.innerHTML+='---------------------------<br/>loaded in: <strong>'+(Date.now()-start)+"</strong>ms"
 }
 
@@ -197,11 +223,31 @@ document.addEventListener('dragover', function (e) {
   return false
 }, false)
 
+document.addEventListener('keydown', function (e) {
+  // e.preventDefault()
+  if(e.keyCode==39||e.keyCode==37){
+	  if(e.keyCode==39){ currentMaterial++ }
+	  else if(e.keyCode==37){ currentMaterial-- }
+	  if(currentMaterial<0){currentMaterial=materials.length-1}
+	  currentMaterial%=materials.length
+	  mesh.material = materials[currentMaterial]
+  }
+  return false
+}, false)
+
+let loadList = []
+function loadNext(){
+	if(loadList.length>0){
+		ParseFile(loadList.pop())
+	}
+}
+
 document.addEventListener('drop', function (e) {
   e.preventDefault()
   let files = e.target.files || e.dataTransfer.files
   for (let i = 0, f; f = files[i]; i++) {
-	  ParseFile(f)
+	  loadList.push(f)
   }
+  loadNext()
   return false
 }, false)

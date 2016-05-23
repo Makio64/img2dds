@@ -4,5 +4,17 @@
 	top:10px;
 	left:10px;
 	font-size:11px;
-	z-index:1000;
+	z-index:1;
+}
+
+canvas{
+	position:absolute;
+	top:0;
+	left:0;
+	z-index:-1;
+}
+
+html,body{
+	padding:0;
+	margin:0;
 }
