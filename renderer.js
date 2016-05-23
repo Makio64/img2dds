@@ -8,12 +8,14 @@ let config = {
 	algo:'DXT1',
 	compressionQuality:'normal',
 	colorMetric:'perceptual',
+	folderDDS:'./',
 	weightColourByAlpha:false,
 	transparent:true,
 	materials:{}
 }
 
 gui = new dat.GUI()
+gui.add(config,"folderDDS")
 gui.add(config,'algo',['DXT1','DXT3','DXT5'])
 gui.add(config,'compressionQuality',['low','normal','hight'])
 gui.add(config,'colorMetric',['perceptual','uniform'])
@@ -119,7 +121,8 @@ function ParseFile(file) {
 			let compressed = dxt.compress(Buffer.from(data),img.width,img.height,flag)
 			let finalBuffer = Buffer.concat([headerBuffer,compressed])
 			infos.innerHTML+='---------------<br/>compression completed<br/>duration :<strong>'+(Date.now()-start)+"</strong>ms<br/>"
-			const path = (file.path.replace(/\.[^/.]+$/, ""))+".dds"
+			const path = (file.path.replace(/[^\/]*$/, ""))+config.folderDDS+file.name.replace(/\.[^/.]+$/,"")+".dds"
+			console.log(path)
 			let fd =  fs.openSync(path, 'w')
 			fs.write(fd, finalBuffer, 0, finalBuffer.length, 0, function(err,written){
 				infos.innerHTML+='size: <strong>'+finalBuffer.length+"</strong>bytes<br/>"
