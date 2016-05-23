@@ -1,0 +1,8 @@
+#infos{
+	color:#FFF;
+	position:absolute;
+	top:10px;
+	left:10px;
+	font-size:11px;
+	z-index:1000;
+}
