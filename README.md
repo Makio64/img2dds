@@ -1,12 +1,12 @@
 [![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
 
-# img2dxt
+# img2dds
 
 ![Super Duplicate Screenshot](http://makiopolis.com/img2dds.jpg)
 
 Convert your images into dds texture files and test it into a threejs view directly.
 
-## Instal
+## Install
 
 ```bash
 # Install dependencies
