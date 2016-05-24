@@ -20,11 +20,10 @@ gui.add(config,'algo',['DXT1','DXT3','DXT5'])
 gui.add(config,'compressionQuality',['low','normal','hight'])
 gui.add(config,'colorMetric',['perceptual','uniform'])
 gui.add(config,'weightColourByAlpha')
-let c = gui.add(config,'transparent')
+// let c = gui.add(config,'transparent')
 let guiMaterials = gui.add(config,'materials',{}).onChange(function(){})
 let materials = []
 let currentMaterial = 0
-
 
 let infos = document.querySelector("#infos");
 
@@ -120,9 +119,16 @@ function ParseFile(file) {
 
 			let compressed = dxt.compress(Buffer.from(data),img.width,img.height,flag)
 			let finalBuffer = Buffer.concat([headerBuffer,compressed])
+			let folder = config.folderDDS
+			if(folder.substr(folder.length - 1) != '/'){
+				folder+='/'
+			}
 			infos.innerHTML+='---------------<br/>compression completed<br/>duration :<strong>'+(Date.now()-start)+"</strong>ms<br/>"
-			const path = (file.path.replace(/[^\/]*$/, ""))+config.folderDDS+file.name.replace(/\.[^/.]+$/,"")+".dds"
-			console.log(path)
+			let path = (file.path.replace(/[^\/]*$/, ""))+folder
+			if(!fs.existsSync(path)){
+				fs.mkdirSync(path);
+			}
+			path+=file.name.replace(/\.[^/.]+$/,"")+".dds"
 			let fd =  fs.openSync(path, 'w')
 			fs.write(fd, finalBuffer, 0, finalBuffer.length, 0, function(err,written){
 				infos.innerHTML+='size: <strong>'+finalBuffer.length+"</strong>bytes<br/>"
@@ -153,15 +159,14 @@ function getRGB(data){
 function calculatePitch( width, bitsPerPixel ){
 	return ( width * bitsPerPixel + 7 ) / 8
 }
-function int32ToFourCC( value ) {
 
+function int32ToFourCC( value ) {
 	return String.fromCharCode(
 		value & 0xff,
 		( value >> 8 ) & 0xff,
 		( value >> 16 ) & 0xff,
 		( value >> 24 ) & 0xff
-	);
-
+	)
 }
 
 let camera
@@ -249,7 +254,9 @@ document.addEventListener('drop', function (e) {
   e.preventDefault()
   let files = e.target.files || e.dataTransfer.files
   for (let i = 0, f; f = files[i]; i++) {
-	  loadList.push(f)
+	  if(f.type.search("image")!=-1){
+		  loadList.push(f)
+	  }
   }
   loadNext()
   return false
