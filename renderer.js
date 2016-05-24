@@ -17,11 +17,15 @@ let config = {
 	folderDDS:'./',
 	weightColourByAlpha:false,
 	transparent:true,
-	materials:{}
+	materials:{},
+	rotatePreview:false,
+	flipY:true
 }
 
 gui = new dat.GUI()
 gui.add(config,"folderDDS")
+gui.add(config,'rotatePreview')
+gui.add(config,'flipY')
 gui.add(config,'algo',['DXT1','DXT3','DXT5'])
 gui.add(config,'compressionQuality',['low','normal','hight'])
 gui.add(config,'colorMetric',['perceptual','uniform'])
@@ -57,7 +61,8 @@ function ParseFile(file) {
 			canvas.width = w
 			canvas.height = h
 			let ctx = canvas.getContext('2d')
-			ctx.drawImage(img,0,0,img.width,img.height,0,0,w,h)
+			ctx.scale(1,-1)
+			ctx.drawImage(img,0,0,img.width,img.height,0,0,w,config.flipY?-h:h)
 			let data = ctx.getImageData(0, 0, w, h).data
 
 			if(w != img.width || h != img.height) {
@@ -217,9 +222,10 @@ function initWebgl(){
 
 function animate() {
 	requestAnimationFrame( animate )
-	var time = Date.now() * 0.001
-	mesh.rotation.x = time
-	mesh.rotation.y = time
+	if(config.rotatePreview){
+		mesh.rotation.x += 0.03
+		mesh.rotation.y += 0.03
+	}
 	renderer.render( scene, camera )
 }
 
