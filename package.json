@@ -4,27 +4,29 @@
   "description": "Convert image to dds",
   "main": "main.js",
   "scripts": {
-	"start": "electron main.js"
+    "start": "electron main.js"
   },
   "repository": {
-	"type": "git",
-	"url": "git+https://github.com/makio64/img2dds.git"
+    "type": "git",
+    "url": "git+https://github.com/makio64/img2dds.git"
   },
   "keywords": [
-	"dxt",
-	"dds",
-	"compression",
-	"texture",
-	"electron"
+    "dxt",
+    "dds",
+    "compression",
+    "texture",
+    "electron"
   ],
   "author": "GitHub",
   "license": "MIT",
   "bugs": {
-	"url": "https://github.com/makio64/img2dds/issues"
+    "url": "https://github.com/makio64/img2dds/issues"
   },
   "homepage": "https://github.com/makio64/img2dds#readme",
   "devDependencies": {
-	"dxt": "^1.0.0",
-	"electron-prebuilt": "^1.1.1"
+    "dxt": "^1.0.0",
+    "electron-prebuilt": "^1.1.1",
+    "is-power-of-two": "^1.0.0",
+    "next-power-of-two": "^1.0.0"
   }
 }

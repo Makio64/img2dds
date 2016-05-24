@@ -2,7 +2,13 @@ const dxt = require('dxt')
 const fs = require('fs')
 const THREE = require('./three.js')
 const dat = require('./dat.gui.js')
+
+const isPo2 = require('is-power-of-two')
+const nextPo2 = require('next-power-of-two')
+
 require('./DDSLoader.js')
+
+//------------------------------------------------------------------------------ CONFIG
 
 let config = {
 	algo:'DXT1',
@@ -27,6 +33,8 @@ let currentMaterial = 0
 
 let infos = document.querySelector("#infos");
 
+//------------------------------------------------------------------------------ DDS Generation
+
 function ParseFile(file) {
 	infos.innerHTML =
 		"<p>File information: <strong>" + file.name +
@@ -38,27 +46,32 @@ function ParseFile(file) {
 		let img = new Image()
 		infos.innerHTML+='---------------<br/>compressing, please wait.<br/>'
 		img.onload = function(){
-			infos.innerHTML+="</strong> dimension: <strong>" + img.width +"x"+ img.height +"</strong> px<br/>"
-			// document.body.appendChild(img)
+			infos.innerHTML+="dimension: <strong>" + img.width +"x"+ img.height +"</strong> px<br/>"
 			const start = Date.now()
-			let canvas = document.createElement('canvas')
-			canvas.width = img.width
-			canvas.height = img.height
-			let ctx = canvas.getContext('2d')
-			ctx.drawImage(img,0,0)
-			let imageData = ctx.getImageData(0, 0, img.width, img.height)
-			let data = imageData.data
 
-			if(!config.transparent){
-				data = getRGB(data)
+			let canvas = document.createElement('canvas')
+			let w = img.width
+			let h = img.height
+			if(!isPo2(w)) { w = nextPo2(w) }
+			if(!isPo2(h)) { h = nextPo2(h) }
+			canvas.width = w
+			canvas.height = h
+			let ctx = canvas.getContext('2d')
+			ctx.drawImage(img,0,0,img.width,img.height,0,0,w,h)
+			let data = ctx.getImageData(0, 0, w, h).data
+
+			if(w != img.width || h != img.height) {
+				infos.innerHTML+="dimension: <strong>" + img.width +"x"+ img.height +"</strong> px<br/>"
 			}
+
+			if(!config.transparent){ data = getRGB(data) }
 
 			let header = ""
 			header += "DDS "//magic number
 			header += int32ToFourCC(124)//size header, have to be 124
-			header += int32ToFourCC(calculatePitch(img.width*img.height,config.transparent?32:24))//pitch
-			header += int32ToFourCC(img.width)//width
-			header += int32ToFourCC(img.height)//height
+			header += int32ToFourCC(calculatePitch(w*h,config.transparent?32:24))//pitch
+			header += int32ToFourCC(w)//width
+			header += int32ToFourCC(h)//height
 			header += int32ToFourCC(0)// ?
 			header += int32ToFourCC(0)// ?
 			header += int32ToFourCC(0)//mipmapCount
@@ -117,7 +130,7 @@ function ParseFile(file) {
 				flag |= dxt.weightColourByAlpha;
 			}
 
-			let compressed = dxt.compress(Buffer.from(data),img.width,img.height,flag)
+			let compressed = dxt.compress(Buffer.from(data),w,h,flag)
 			let finalBuffer = Buffer.concat([headerBuffer,compressed])
 			let folder = config.folderDDS
 			if(folder.substr(folder.length - 1) != '/'){
@@ -145,6 +158,13 @@ function ParseFile(file) {
 	reader.readAsDataURL(file)
 }
 
+let loadList = []
+function loadNext(){
+	if(loadList.length>0){
+		ParseFile(loadList.pop())
+	}
+}
+
 function getRGB(data){
 	const l = data.length/4
 	let rgb = new Uint8Array(l*3)
@@ -168,6 +188,8 @@ function int32ToFourCC( value ) {
 		( value >> 24 ) & 0xff
 	)
 }
+
+//------------------------------------------------------------------------------ WEBGL
 
 let camera
 let scene
@@ -223,8 +245,9 @@ function loadTexture(url,name){
 	currentMaterial = materials.length
 	materials.push(mesh.material)
 	updateMaterialGUI()
-	// infos.innerHTML+='---------------------------<br/>loaded in: <strong>'+(Date.now()-start)+"</strong>ms"
 }
+
+//------------------------------------------------------------------------------ EVENT LISTENER
 
 document.addEventListener('dragover', function (e) {
   e.preventDefault()
@@ -242,13 +265,6 @@ document.addEventListener('keydown', function (e) {
   }
   return false
 }, false)
-
-let loadList = []
-function loadNext(){
-	if(loadList.length>0){
-		ParseFile(loadList.pop())
-	}
-}
 
 document.addEventListener('drop', function (e) {
   e.preventDefault()

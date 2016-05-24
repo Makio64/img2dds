@@ -21,7 +21,7 @@ Drag'n drop your image(s) into the app and it will convert it to the dds (the fi
 
 ## Technical note
 
-The images dimensions need to a power of two : 256x256 / 512x512 / 256x512 / etc..
+The images ~~dimensions need to a power of two : 256x256 / 512x512 / 256x512 / etc..~~ will be resized to the next power of 2 before convert as DDS texture.
 
 The compression of the dds is terrible but on my test I figured out the gzipped version are very close, here my results on 59images with a size from 256 to 2048 (no alpha) :
 - jpegs files optimized (imageoptim) : 12.9mo
