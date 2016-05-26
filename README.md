@@ -49,6 +49,10 @@ The dds files are load with the THREE.DDSLoader: https://github.com/mrdoob/three
 - ColorMetric : perceptual(default) / uniform
 - weightColourByAlpha : true / false (default is false)
 
+## Trouble shooting
+
+If you have any bugs, press "d" to open the devTool panel to see the error message, if you can't figure out the problem, thanks to open an issue.
+
 ## Learn more about DDS & DXT Compressed Texture
 
 Great article on DDS & DXT : http://beyondskyrim.org/2015/05/26/working-with-dds-files/

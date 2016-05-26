@@ -2,6 +2,7 @@ const dxt = require('dxt')
 const fs = require('fs')
 const THREE = require('./three.js')
 const dat = require('./dat.gui.js')
+const electron = require('electron')
 
 const isPo2 = require('is-power-of-two')
 const nextPo2 = require('next-power-of-two')
@@ -262,6 +263,9 @@ document.addEventListener('dragover', function (e) {
 
 document.addEventListener('keydown', function (e) {
   // e.preventDefault()
+
+  electron.ipcRenderer.send('invokeAction', e.keyCode)
+
   if(e.keyCode==39||e.keyCode==37){
 	  if(e.keyCode==39){ currentMaterial++ }
 	  else if(e.keyCode==37){ currentMaterial-- }

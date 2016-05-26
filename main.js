@@ -25,3 +25,18 @@ app.on('activate', function () {
 	createWindow()
   }
 })
+
+let devTools = false
+
+electron.ipcMain.on('invokeAction', function(event, keyCode){
+	if(keyCode!=68)
+		return;
+
+	devTools =! devTools
+
+	if(devTools){
+		mainWindow.webContents.openDevTools()
+	}else{
+		mainWindow.webContents.closeDevTools()
+	}
+});
