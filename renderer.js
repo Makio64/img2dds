@@ -59,6 +59,10 @@ function ParseFile(file) {
 			let h = img.height
 			if(!isPo2(w)) { w = nextPo2(w) }
 			if(!isPo2(h)) { h = nextPo2(h) }
+			 // the dds algo need 256 as minimum size
+			w = Math.max( 256, w )
+			h = Math.max( 256, w )
+
 			canvas.width = w
 			canvas.height = h
 			let ctx = canvas.getContext('2d')

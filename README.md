@@ -21,7 +21,10 @@ Drag'n drop your image(s) into the app and it will convert it to the dds (the fi
 
 ## Technical note
 
-The images ~~dimensions need to a power of two : 256x256 / 512x512 / 256x512 / etc..~~ will be resized to the next power of 2 before convert as DDS texture.
+The images ~~dimensions need to a power of two and minimum size is 256 : 256x256 / 512x512 / 256x512 / etc..~~
+If the image is not a power of 2 it will be resized to the next power of 2 before convert as DDS texture.
+If the image is smaller than 256, it will be resized to 256.
+Example : 967x128 -> 1024x256
 
 The compression of the dds is terrible but on my test I figured out the gzipped version are very close, here my results on 59images with a size from 256 to 2048 (no alpha) :
 - jpegs files optimized (imageoptim) : 12.9mo
@@ -51,7 +54,8 @@ The dds files are load with the THREE.DDSLoader: https://github.com/mrdoob/three
 
 ## Trouble shooting
 
-If you have any bugs, press "d" to open the devTool panel to see the error message, if you can't figure out the problem, thanks to open an issue.
+If you have a problem while compiling, please install the latest nodejs and then "npm rebuild", if the problem persist, thanks to open an issue.
+If you have a bug while using the tool, press "d" to open the devTool panel to see the error message, if you can't figure out the problem, thanks to open an issue.
 
 ## Learn more about DDS & DXT Compressed Texture
 
