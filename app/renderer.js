@@ -1,12 +1,11 @@
 const dxt = require('dxt')
 const fs = require('fs')
-const THREE = require('./three.js')
-const dat = require('./dat.gui.js')
 const electron = require('electron')
-
 const isPo2 = require('is-power-of-two')
 const nextPo2 = require('next-power-of-two')
 
+const THREE = require('./three.js')
+const dat = require('./dat.gui.js')
 require('./DDSLoader.js')
 
 //------------------------------------------------------------------------------ CONFIG
